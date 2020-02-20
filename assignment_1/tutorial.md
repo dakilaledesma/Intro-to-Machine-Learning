@@ -18,9 +18,9 @@ In this tutorial, we will be classifying whether a given 6-letter word is Englis
 
 <sub> Table 1: Training words and target labels in two languages </sub>
 
-The above table (make sure to read the headers) is a simple way to think about your training and target arrays. For classification, your data is structured in a way that "X" is the data you want to train on, and "y" is the label (or answer) associated with the data. 
+The above table (make sure to read the headers) is a simple way to think about your training and target arrays. For classification, your data is structured in a way that "X" is the data you want to train on, and "y" is the label (or answer) associated with the data.
 
-However, as you have learnt in class already, you cannot just put in words into a model in verbatim. You'll have to change these words into a number representation in order to use them as data for our models. 
+However, as you have learnt in class already, you cannot just put in words into a model in verbatim. You'll have to change these words into a number representation in order to use them as data for our models.
 
 Python's ```ord()``` function allows us to convert a character into an integer. Using ```ord()``` and a for loop, we can iterate through a word and change every character into a number representation. We store these integers into an array that represents the original word.
 
@@ -61,7 +61,7 @@ training = [
 <sub> Code block 2: Two-dimensional array representation of the 6 words found in Table 1 </sub>
 
 
-As you can see, it's now a two-dimensional array. Six one-dimensional arrays representing the six words that we had, all contained in a larger array named ```training```. 
+As you can see, it's now a two-dimensional array. Six one-dimensional arrays representing the six words that we had, all contained in a larger array named ```training```.
 
 Now that we have training data, we need to be able to tell the computer which data belongs in which category:
 
@@ -80,14 +80,14 @@ target = [
 
 As you can see, labels are also represented as numbers, in the same index as their respective training data value. So when the model predicts 0, we know that it's English. When the model predicts 1, we know that it's German.
 
-Now, let's import the models needed for this assignment, and instantiate them. We will be using sklearn, and sklearn is *incredibly* easy to use if you need simpler models tackling simpler, easily differentiatable data such as English vs. German words. On tougher data, your mileage may vary. 
+Now, let's import the models needed for this assignment, and instantiate them. We will be using sklearn, and sklearn is *incredibly* easy to use if you need simpler models tackling simpler, easily differentiatable data such as English vs. German words. On tougher data, your mileage may vary.
 
 ```python
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.neural_network import MLPClassifier
 
-knn_model = KNeighborsClassifier 
+knn_model = KNeighborsClassifier
 svm_model = svm.SVC()
 mlp_nn = MLPClassifier()
 ```
@@ -156,6 +156,6 @@ plt.show()
 
 
 This is what you get:
-![MPL_Bar_Graph](images/mpl_bargraph1.PNG?raw=true "MatPlotLib Bar Graph")
+![MPL_Bar_Graph]("md_res/mpl_bargraph1.PNG?raw=true "MatPlotLib Bar Graph")
 
 That should be all you need to do the assignment!
