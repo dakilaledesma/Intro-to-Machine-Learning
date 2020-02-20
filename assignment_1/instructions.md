@@ -5,7 +5,7 @@ This assignment is easy and relatively straightforward:
 You are given two text files: ```english.txt``` and ```german.txt``` within this folder. Use the text files in order to build your training dataset and your labels (answers).
 
 ## 2.
-Get another language that is not English or German and add that language as part of your dataset. If English is 0, and German is 1, then your third language that you decide to add must be represented by another number.
+Get another language that is not English or German and add that language as part of your dataset. For your labels, if English is 0, and German is 1, then your third language that you decide to add must be represented by another number.
 
 ## 3.
 Sift the dataset down to only 5-letter words. Pre-process your data using whatever means you would like; you don't have to use ```ord()```, for example, if you have a better idea.
