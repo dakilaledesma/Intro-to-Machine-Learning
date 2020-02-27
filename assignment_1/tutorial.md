@@ -87,7 +87,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.neural_network import MLPClassifier
 
-knn_model = KNeighborsClassifier
+knn_model = KNeighborsClassifier()
 svm_model = svm.SVC()
 mlp_nn = MLPClassifier()
 ```
