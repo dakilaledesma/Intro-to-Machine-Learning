@@ -84,7 +84,7 @@ labels = []
 
 for filepath in glob.iglob('data/train/*.jpg'):
     image = Image.open(filepath)
-    image.resize((64, 64))
+    image = image.resize((64, 64))
     training_data.append(np.array(image))
     if "cat" in filepath:
         labels.append(0)
@@ -167,7 +167,7 @@ labels = []
 
 for filepath in glob.iglob('data/train/*.jpg'):
     image = Image.open(filepath)
-    image.resize((64, 64))
+    image = image.resize((64, 64))
     training_data.append(np.array(image))
     if "cat" in filepath:
         labels.append(0)
