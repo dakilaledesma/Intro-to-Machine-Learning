@@ -4,8 +4,6 @@ In this assignment, we will try to break the bounds of classification and do som
 
 You will be creating a simple image upscaler using a convolutional autoencoder. As such, you will be training a neural network to turn a dog/cat 28x28 image to *at least* 56x56
 
-More information on this dataset that you will be using can be found [here](http://www.cs.utoronto.ca/~kriz/cifar.html)
-
 ## 1.
 Download the dataset provided. The dataset is segmented into training and testing. Note that the labels denoting if an image is a dog or a cat (through the filenames) of the images will not matter, as we will not be doing a classification. Due to this, do not segment your data into dog and cat categories.
 
