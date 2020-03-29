@@ -443,6 +443,7 @@ def generate_text(model, length):
         print(int_to_character[ix[-1]], end="")
         ix = np.argmax(model.predict(np.array(X[:, :i + 1, :]))[0], 1)
         y_char.append(int_to_character[ix[-1]])
+    print("\n")
     return ''.join(y_char)
 
 GENERATE_LENGTH = 20
