@@ -70,7 +70,8 @@ http://www.wildml.com/2015/09/recurrent-neural-networks-tutorial-part-1-introduc
 ## Letter Sequence Tutorial
 This tutorial partially handed off to another tutorial by Jason Brownlee (many of you may have seen his tutorial before):
 https://machinelearningmastery.com/understanding-stateful-lstm-recurrent-neural-networks-python-keras/
-Unlike the harder homework below, I'm explaining here as there are a lot of things that I think he has left out, that is important to understanding how this code works.
+
+Unlike the homework you'll be tackling for submission (in which I'll leave the original author to explain the code) I'll be explaining this code here as there are a lot of things that I think he has left out, that is important to understanding how this code works.
 
 The objective with the code I've taken is to generate the next letter in the alphabet, given the current letter. Not only that, but the output of the next letter is fed again as input and the model has to predict the letter after that, etc.
 
@@ -299,69 +300,186 @@ This was my result training on Alice in Wonderland after 13 Epochs. And as most 
 Code source and intuitional explanations are found at this person's GitHub. It is pretty well explained:
 https://chunml.github.io/ChunML.github.io/project/Creating-Text-Generator-Using-Recurrent-Neural-Network/
 
-The code had some missing lines and errors, so here is the full working code:
+The code had some missing lines (lines he did not include for working code) and errors, written with the previous TensorFlow version, and was quite hard to read, so I've rewritten the code and will be walking you through it.
+
+As usual, we will be importing the following libraries. Note that we are importing the Long-Short Term Memory (LSTM) layer, as well as the TimeDistributed layer that allows us to apply a specific layer to every time step within the LSTM unrolling step. It is also here where we define some variables and hyperparameters not only for our neural network training but also for shaping our training/target datasets.
 ```py
 import numpy as np
-from keras.models import Sequential
-from keras.layers import LSTM, TimeDistributed, Activation, Dense
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, TimeDistributed, Activation, Dense
+import string
 
-DATA_DIR = 'dataset/alice.txt'
+DATA_DIR = 'alice.txt'
+SEQ_LENGTH = 100
+HIDDEN_DIM = 700
+LAYER_NUM = 3
+BATCH_SIZE = 12
+```
+
+Next, we'll be sifting the data being read. I'm using text from *Alice in Wonderland*, which may be found [here](https://www.gutenberg.org/files/11/11.txt).
+```py
+data = open(DATA_DIR, 'r').read()
+
+valid_characters = string.ascii_letters + ".,! -'" + string.digits
+character_to_int = {}
+int_to_character = {}
+for index in range(len(valid_characters)):
+    character = valid_characters[index]
+    character_to_int[character] = index
+    int_to_character[index] = character
+
+training_string = ""
+for character in data:
+    if character in valid_characters:
+        training_string += character
+    elif character == '\n':
+        training_string += ' '
+
+while True:
+    if "  " in training_string:
+        training_string = training_string.replace("  ", ' ')
+    else:
+        break
+
+target_string = training_string[1:] + training_string[0]
+
+X = []
+y = []
+for i in range(0, len(training_string), SEQ_LENGTH):
+    training_sequence = training_string[i:(i + SEQ_LENGTH)]
+    integer_training_sequence = [character_to_int[value] for value in training_sequence]
+    input_sequence = np.zeros((SEQ_LENGTH, len(valid_characters)))
+    if len(integer_training_sequence) == SEQ_LENGTH:
+        for j in range(SEQ_LENGTH):
+            input_sequence[j][integer_training_sequence[j]] = 1.
+    X.append(input_sequence)
+
+    y_sequence = target_string[i:(i + SEQ_LENGTH)]
+    print(training_sequence, '|', y_sequence)
+    y_sequence_ix = [character_to_int[value] for value in y_sequence]
+    target_sequence = np.zeros((SEQ_LENGTH, len(valid_characters)))
+    if len(y_sequence_ix) == SEQ_LENGTH:
+        for j in range(SEQ_LENGTH):
+            target_sequence[j][y_sequence_ix[j]] = 1.
+    y.append(target_sequence)
+
+X = np.reshape(X, (-1, SEQ_LENGTH, len(valid_characters)))
+y = np.reshape(y, (-1, SEQ_LENGTH, len(valid_characters)))
+
+model = Sequential()
+model.add(LSTM(HIDDEN_DIM, input_shape=(None, len(valid_characters)), return_sequences=True))
+for i in range(LAYER_NUM - 1):
+    model.add(LSTM(HIDDEN_DIM, return_sequences=True))
+model.add(TimeDistributed(Dense(len(valid_characters))))
+model.add(Activation('softmax'))
+model.compile(loss="categorical_crossentropy", optimizer="adam")
+
+
+def generate_text(model, length):
+    ix = [np.random.randint(len(valid_characters))]
+    y_char = [int_to_character[ix[-1]]]
+    X = np.zeros((1, length, len(valid_characters)))
+    for i in range(length):
+        X[0, i, :][ix[-1]] = 1
+        print(int_to_character[ix[-1]], end="")
+        ix = np.argmax(model.predict(np.array(X[:, :i + 1, :]))[0], 1)
+        y_char.append(int_to_character[ix[-1]])
+    return ''.join(y_char)
+
+GENERATE_LENGTH = 20
+nb_epoch = 0
+while True:
+    model.fit(X, y, batch_size=BATCH_SIZE, verbose=1, epochs=1)
+    nb_epoch += 1
+    generate_text(model, GENERATE_LENGTH)
+    if nb_epoch % 10 == 0:
+        model.save_weights('checkpoint_{}_epoch_{}.hdf5'.format(HIDDEN_DIM, nb_epoch))
+```
+
+```py
+import numpy as np
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, TimeDistributed, Activation, Dense
+import string
+
+DATA_DIR = 'alice.txt'
 SEQ_LENGTH = 100
 HIDDEN_DIM = 700
 LAYER_NUM = 3
 BATCH_SIZE = 12
 
 data = open(DATA_DIR, 'r').read()
-chars = list(set(data))
-VOCAB_SIZE = len(chars)
 
-ix_to_char = {ix: char for ix, char in enumerate(chars)}
-char_to_ix = {char: ix for ix, char in enumerate(chars)}
+valid_characters = string.ascii_letters + ".,! -'" + string.digits
+character_to_int = {}
+int_to_character = {}
+for index in range(len(valid_characters)):
+    character = valid_characters[index]
+    character_to_int[character] = index
+    int_to_character[index] = character
 
-X = np.zeros((int(len(data) / SEQ_LENGTH), SEQ_LENGTH, VOCAB_SIZE))
-y = np.zeros((int(len(data) / SEQ_LENGTH), SEQ_LENGTH, VOCAB_SIZE))
+training_string = ""
+for character in data:
+    if character in valid_characters:
+        training_string += character
+    elif character == '\n':
+        training_string += ' '
 
-for i in range(0, int(len(data) / SEQ_LENGTH)):
-    X_sequence = data[i * SEQ_LENGTH:(i + 1) * SEQ_LENGTH]
-    X_sequence_ix = [char_to_ix[value] for value in X_sequence]
-    input_sequence = np.zeros((SEQ_LENGTH, VOCAB_SIZE))
-    for j in range(SEQ_LENGTH):
-        input_sequence[j][X_sequence_ix[j]] = 1.
-    X[i] = input_sequence
+while True:
+    if "  " in training_string:
+        training_string = training_string.replace("  ", ' ')
+    else:
+        break
 
-    y_sequence = data[i * SEQ_LENGTH + 1:(i + 1) * SEQ_LENGTH + 1]
-    y_sequence_ix = [char_to_ix[value] for value in y_sequence]
-    target_sequence = np.zeros((SEQ_LENGTH, VOCAB_SIZE))
-    for j in range(SEQ_LENGTH):
-        target_sequence[j][y_sequence_ix[j]] = 1.
-    y[i] = target_sequence
+target_string = training_string[1:] + training_string[0]
+
+X = []
+y = []
+for i in range(0, len(training_string), SEQ_LENGTH):
+    training_sequence = training_string[i:(i + SEQ_LENGTH)]
+    integer_training_sequence = [character_to_int[value] for value in training_sequence]
+    input_sequence = np.zeros((SEQ_LENGTH, len(valid_characters)))
+    if len(integer_training_sequence) == SEQ_LENGTH:
+        for j in range(SEQ_LENGTH):
+            input_sequence[j][integer_training_sequence[j]] = 1.
+    X.append(input_sequence)
+
+    y_sequence = target_string[i:(i + SEQ_LENGTH)]
+    print(training_sequence, '|', y_sequence)
+    y_sequence_ix = [character_to_int[value] for value in y_sequence]
+    target_sequence = np.zeros((SEQ_LENGTH, len(valid_characters)))
+    if len(y_sequence_ix) == SEQ_LENGTH:
+        for j in range(SEQ_LENGTH):
+            target_sequence[j][y_sequence_ix[j]] = 1.
+    y.append(target_sequence)
+
+X = np.reshape(X, (-1, SEQ_LENGTH, len(valid_characters)))
+y = np.reshape(y, (-1, SEQ_LENGTH, len(valid_characters)))
 
 model = Sequential()
-model.add(LSTM(HIDDEN_DIM, input_shape=(None, VOCAB_SIZE), return_sequences=True))
+model.add(LSTM(HIDDEN_DIM, input_shape=(None, len(valid_characters)), return_sequences=True))
 for i in range(LAYER_NUM - 1):
     model.add(LSTM(HIDDEN_DIM, return_sequences=True))
-model.add(TimeDistributed(Dense(VOCAB_SIZE)))
+model.add(TimeDistributed(Dense(len(valid_characters))))
 model.add(Activation('softmax'))
 model.compile(loss="categorical_crossentropy", optimizer="adam")
 
 
 def generate_text(model, length):
-    ix = [np.random.randint(VOCAB_SIZE)]
-    y_char = [ix_to_char[ix[-1]]]
-    X = np.zeros((1, length, VOCAB_SIZE))
+    ix = [np.random.randint(len(valid_characters))]
+    y_char = [int_to_character[ix[-1]]]
+    X = np.zeros((1, length, len(valid_characters)))
     for i in range(length):
         X[0, i, :][ix[-1]] = 1
-        print(ix_to_char[ix[-1]], end="")
-        ix = np.argmax(model.predict(X[:, :i + 1, :])[0], 1)
-        y_char.append(ix_to_char[ix[-1]])
-    return ('').join(y_char)
-
+        print(int_to_character[ix[-1]], end="")
+        ix = np.argmax(model.predict(np.array(X[:, :i + 1, :]))[0], 1)
+        y_char.append(int_to_character[ix[-1]])
+    return ''.join(y_char)
 
 GENERATE_LENGTH = 20
 nb_epoch = 0
 while True:
-    print('\n\n')
-    model.fit(X, y, batch_size=BATCH_SIZE, verbose=1, nb_epoch=1)
+    model.fit(X, y, batch_size=BATCH_SIZE, verbose=1, epochs=1)
     nb_epoch += 1
     generate_text(model, GENERATE_LENGTH)
     if nb_epoch % 10 == 0:
