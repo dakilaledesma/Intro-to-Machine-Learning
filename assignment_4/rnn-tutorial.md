@@ -300,7 +300,7 @@ This was my result training on Alice in Wonderland after 13 Epochs. And as most 
 Code source and intuitional explanations are found at this person's GitHub. It is pretty well explained:
 https://chunml.github.io/ChunML.github.io/project/Creating-Text-Generator-Using-Recurrent-Neural-Network/
 
-The code had some missing lines (lines he did not include for working code) and errors, written with the previous TensorFlow version, and was quite hard to read, so I've rewritten the code and will be walking you through it.
+The code had some missing lines (lines he did not include for working code) and errors, written with the previous TensorFlow version, and was quite hard to read, so I've rewritten a bit of the code and will be walking you through it.
 
 As usual, we will be importing the following libraries. Note that we are importing the Long-Short Term Memory (LSTM) layer, as well as the TimeDistributed layer that allows us to apply a specific layer to every time step within the LSTM unrolling step. It is also here where we define some variables and hyperparameters not only for our neural network training but also for shaping our training/target datasets.
 
