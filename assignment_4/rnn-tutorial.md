@@ -303,12 +303,14 @@ https://chunml.github.io/ChunML.github.io/project/Creating-Text-Generator-Using-
 The code had some missing lines (lines he did not include for working code) and errors, written with the previous TensorFlow version, and was quite hard to read, so I've rewritten the code and will be walking you through it.
 
 As usual, we will be importing the following libraries. Note that we are importing the Long-Short Term Memory (LSTM) layer, as well as the TimeDistributed layer that allows us to apply a specific layer to every time step within the LSTM unrolling step. It is also here where we define some variables and hyperparameters not only for our neural network training but also for shaping our training/target datasets.
+
 ```py
 import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, TimeDistributed, Activation, Dense
 import string
 
+# Parameters
 DATA_DIR = 'alice.txt'
 SEQ_LENGTH = 100
 HIDDEN_DIM = 700
@@ -317,10 +319,17 @@ BATCH_SIZE = 12
 ```
 
 Next, we'll be sifting the data being read. I'm using text from *Alice in Wonderland*, which may be found [here](https://www.gutenberg.org/files/11/11.txt).
+
+We'll be storing a string of ```valid_characters``` that contains upper case, lowercase, digits, as well as some common symbols into a dictionary and using that as our conversion from character to integers (instead of ```ord()```). Why? It allows us to fix the characters into a range of number representations (from 0 to the number of characters within a string) instead of arbitrary ASCII number representations (which jumps from 60 to 300 with skips within the numbers). We use the ```valid_characters``` string in order to clean the book data into ```training_string```.
+
 ```py
+# Loading the data
 data = open(DATA_DIR, 'r').read()
 
+# Creating the string of valid characters
 valid_characters = string.ascii_letters + ".,! -'" + string.digits
+
+# Creating the dictionaries to convert characters to digits, and digits back to characters
 character_to_int = {}
 int_to_character = {}
 for index in range(len(valid_characters)):
@@ -328,6 +337,7 @@ for index in range(len(valid_characters)):
     character_to_int[character] = index
     int_to_character[index] = character
 
+# Creation of the training string that will be cleaned using our valid_characters. Note that we will also be replacing newlines with spaces
 training_string = ""
 for character in data:
     if character in valid_characters:
@@ -335,25 +345,67 @@ for character in data:
     elif character == '\n':
         training_string += ' '
 
+# Cleaning up the data free of double spaces
 while True:
     if "  " in training_string:
         training_string = training_string.replace("  ", ' ')
     else:
         break
+```
 
+Next, we will create the target_string. This is just the training string but one character shifted to the left. The code block below does this:
+- If the training string is:
+  - ```"My training string"```
+- The target string is:
+  - ```"y training stringM"```
+
+Why? We want the neural network to take the current character *and predict the next character* at that specific position. As such:
+- Current character M -> predict y
+- Current character " " -> predict 't' or 's'
+etc.
+
+```py
 target_string = training_string[1:] + training_string[0]
+```
 
+Now that we have the training and target strings, we will need to make them into array representations that could be understood by the neural network. This is what the following code does (which is similar to what is found within the original source code).
+
+In summary, here is what is being done to both the training string and the testing string:
+1. Partition the string into strings that are of length ```SEQ_LENGTH```
+2. Put each SEQ_LENGTH partition from character representation to number representation.
+3. Make sure the sequence is equal to the SEQ_LENGTH (important when reaching the end of the string and there's not enough characters to reach the SEQ_LENGTH).
+4. One-hot encode all of the letters within the string sequence. This would mean that if the character was ```'b'``` to would be ```[0, 1, 0, 0, 0, ..., 0]``` instead of ```2```. This would also mean that each string partition is now a 2D array.
+5. Append the one-hot encoded string partition into the respective training and target arrays.
+6. Reshape the training and target arrays to the correct shape.
+
+```py
+# Instantiate training and testing arrays to be appended to
 X = []
 y = []
+
+# For loop with iteration size of SEQ_LENGTH instead of 1 to partition the string.
 for i in range(0, len(training_string), SEQ_LENGTH):
+
+    # Take a string split from index i to i + the SEQ_LENGTH
     training_sequence = training_string[i:(i + SEQ_LENGTH)]
+
+    # Change the characters into a number representation
     integer_training_sequence = [character_to_int[value] for value in training_sequence]
+
+    # Instantiate the 0 array for one-hot encoding
     input_sequence = np.zeros((SEQ_LENGTH, len(valid_characters)))
+
+    # Make sure that the character sequence is == to SEQ_LENGTH
     if len(integer_training_sequence) == SEQ_LENGTH:
+
+        # For each character in the sequence, set the 0-arrays character *denoted by integer_training_sequence at that index*'s value to 1 to one-hot encode that character.
         for j in range(SEQ_LENGTH):
             input_sequence[j][integer_training_sequence[j]] = 1.
+
+    # Append that character to X
     X.append(input_sequence)
 
+    # Same as above happens for the target sequence but using the target sequence data.
     y_sequence = target_string[i:(i + SEQ_LENGTH)]
     print(training_sequence, '|', y_sequence)
     y_sequence_ix = [character_to_int[value] for value in y_sequence]
@@ -363,9 +415,14 @@ for i in range(0, len(training_string), SEQ_LENGTH):
             target_sequence[j][y_sequence_ix[j]] = 1.
     y.append(target_sequence)
 
+# Reshape the arrays to the correct dimensionality.
 X = np.reshape(X, (-1, SEQ_LENGTH, len(valid_characters)))
 y = np.reshape(y, (-1, SEQ_LENGTH, len(valid_characters)))
+```
 
+Now, we'll create the model. As you can see, we're using the parameters set at the start of the code, including the number of neurons within the layer with ```HIDDEN_DIM```, the number of layers with ```LAYER_NUM```, etc. As stated before, we're using TimeDistributed to apply a dense layer (with number of neurons == to number of valid characters which is == to the length of the character one-hot encoded representation array) at each time step.
+
+```py
 model = Sequential()
 model.add(LSTM(HIDDEN_DIM, input_shape=(None, len(valid_characters)), return_sequences=True))
 for i in range(LAYER_NUM - 1):
@@ -373,8 +430,10 @@ for i in range(LAYER_NUM - 1):
 model.add(TimeDistributed(Dense(len(valid_characters))))
 model.add(Activation('softmax'))
 model.compile(loss="categorical_crossentropy", optimizer="adam")
+```
 
-
+Lastly, we have code that will generate the text back from the one-hot encoded representations to the original character representations, and then join them back into a single string. We are using a epoch of one and using a ```while``` loop in order to generate strings after each epoch of training, instead of waiting for the whole model to train before seeing the results.
+```py
 def generate_text(model, length):
     ix = [np.random.randint(len(valid_characters))]
     y_char = [int_to_character[ix[-1]]]
@@ -396,6 +455,7 @@ while True:
         model.save_weights('checkpoint_{}_epoch_{}.hdf5'.format(HIDDEN_DIM, nb_epoch))
 ```
 
+And below is the entirety of the code above (without comments).
 ```py
 import numpy as np
 from tensorflow.keras.models import Sequential
