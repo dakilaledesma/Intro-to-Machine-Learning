@@ -19,7 +19,6 @@ discriminator.add(Conv2D(32, (3, 3), input_shape=(28, 28, 1), activation='relu')
 # Grading rubric
 **Out of 100 points**
 
-- 10 points: Load the dataset properly
 - 50 points: Have the neural network train.
-- 40 points: Have the neural network generate something better than the results found within the MLP GAN in the instructions. It should look something similar (or better) than this baseline:
+- 50 points: Have the neural network generate something better than the results found within the MLP GAN in the instructions. It should look something similar (or better) than this baseline:
 ![baseline](md_res/epoch8200cnn.png)
