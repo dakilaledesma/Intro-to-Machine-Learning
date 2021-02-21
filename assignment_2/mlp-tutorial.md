@@ -279,7 +279,7 @@ def my_model(x_train, y_train, x_val, y_val, params):
                   metrics=['accuracy'])
 
     out = model.fit(x_train, y_train,
-                    validation_data=[x_val, y_val],
+                    validation_data=(x_val, y_val),
                     batch_size=params['batch_size'],
                     epochs=20,
                     verbose=0)
@@ -356,7 +356,7 @@ def my_model(x_train, y_train, x_val, y_val, params):
                   metrics=['accuracy'])
 
     out = model.fit(x_train, y_train,
-                    validation_data=[x_val, y_val],
+                    validation_data=(x_val, y_val),
                     batch_size=params['batch_size'],
                     epochs=20,
                     verbose=0)
