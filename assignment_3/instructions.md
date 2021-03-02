@@ -13,7 +13,7 @@ Process your images:
   - You can process your images to be black and white, or you can use the full RGB. Using black and white will yield better results for the simple autoencoders that we are using.
 
 ## 3.
-Beware of time. The training of the data took ~50 minutes on a Nvidia GTX 1080Ti (which for consumer cards is close to the top for most powerful GPU available). If you do not have a powerful GPU, keep in mind that this time could be a lot higher. Tweaking the neural network hyperparameters to get a meaningful result may cause you to multiply 50 minutes training by a lot.
+Beware of time. The training of the data took ~50 minutes on a Nvidia GTX 1080Ti. Keep in mind that this time could be a lot higher for lower-end GPUs or GPUs that are older. Tweaking the neural network hyperparameters to get a meaningful result may cause you to multiply 50 minutes training by a lot.
   - I strongly recommend you to save your *X* and *y* arrays using ```numpy.save('enter_filename.npy', <variable name of array>)``` and then load them using ```<variable name of array> = numpy.load('enter_filename.npy')```. This will save you a lot of time from loading, reprocessing, and pushing to an array 25000 images over and over again.
 
 ## 4.
