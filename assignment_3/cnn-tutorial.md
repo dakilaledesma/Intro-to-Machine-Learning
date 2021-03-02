@@ -81,8 +81,9 @@ Lastly, for the labels, notice that we are using ```0``` for cat and ```1``` for
 ```py
 training_data = []
 labels = []
+files = glob.glob('data/train/*.jpg')
 
-for filepath in glob.iglob('data/train/*.jpg'):
+for filepath in files:
     image = Image.open(filepath)
     image = image.resize((64, 64))
     training_data.append(np.array(image))
@@ -164,8 +165,9 @@ from PIL import Image
 
 training_data = []
 labels = []
+files = glob.glob('data/train/*.jpg')
 
-for filepath in glob.iglob('data/train/*.jpg'):
+for filepath in files:
     image = Image.open(filepath)
     image = image.resize((64, 64))
     training_data.append(np.array(image))
