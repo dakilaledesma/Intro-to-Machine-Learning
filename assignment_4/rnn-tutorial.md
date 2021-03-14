@@ -324,7 +324,7 @@ We'll be storing a string of ```valid_characters``` that contains upper case, lo
 
 ```py
 # Loading the data
-data = open(DATA_DIR, 'r').read()
+data = open(DATA_DIR, 'r', encoding='latin-1').read()
 
 # Creating the string of valid characters
 valid_characters = string.ascii_letters + ".,! -'" + string.digits
@@ -469,7 +469,7 @@ HIDDEN_DIM = 700
 LAYER_NUM = 3
 BATCH_SIZE = 12
 
-data = open(DATA_DIR, 'r').read()
+data = open(DATA_DIR, 'r', encoding='latin-1').read()
 
 valid_characters = string.ascii_letters + ".,! -'" + string.digits
 character_to_int = {}
