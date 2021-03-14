@@ -3,7 +3,7 @@
 In this assignment, you'll be following the tutorial code to generate sentences from your own text file. This homework is very easy.
 
 ## 1.
-Download a dataset. You would want something pretty long, for example using a book. Below, the generated sequence was trained using "Alice in Wonderland."
+Download a dataset. You would want something pretty long, for example using a book. In the tutorial, the generated sequence was trained using "Alice in Wonderland."
 
 ## 2.
 Generate a 20-character long sequence.
